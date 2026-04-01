@@ -136,7 +136,7 @@ Die Standardregel 5712 feuert relativ früh. Ich habe eine zusätzliche Regel ge
 
 `frequency="10"` bedeutet: die Regel feuert beim zehnten Treffer der Basisregel 5711 innerhalb des definierten Zeitfensters. Das reduziert False Positives bei Nutzern, die sich ein paarmal vertippen, ohne echte Angriffe zu verpassen.
 
-Bewusst gewählt wurde 5711 als Basis und nicht 5712. Rule 5712 ist selbst bereits eine aggregierte Regel – sie feuert erst, nachdem Wazuh intern mehrere Einzelereignisse gezählt hat. Wer eine Custom Rule auf 5712 aufbaut, stapelt zwei Zähler übereinander und verliert die Kontrolle über den genauen Schwellenwert. Mit 5711 als Basis wird direkt auf dem Rohereignis gezählt – jedem einzelnen fehlgeschlagenen Login – und das Zeitfenster lässt sich sauber kalibrieren.
+Bewusst gewählt wurde 5711 als Basis und nicht 5712. Rule 5712 ist selbst bereits eine aggregierte Regel. Sie feuert erst, nachdem Wazuh intern mehrere Einzelereignisse gezählt hat. Wer eine Custom Rule auf 5712 aufbaut, stapelt zwei Zähler übereinander und verliert die Kontrolle über den genauen Schwellenwert. Mit 5711 als Basis wird direkt auf dem Rohereignis gezählt, jedem einzelnen fehlgeschlagenen Login und das Zeitfenster lässt sich sauber kalibrieren.
 
 ---
 
