@@ -8,7 +8,7 @@ Praktische Übungen im Bereich Security Operations und Incident Response, durchg
 
 | Datei | Beschreibung |
 |---|---|
-| `SOC_HomeLab_Writeup_v2.md` | Vollständiger Write-up: Aufbau der Umgebung, simulierter Brute-Force-Angriff, Alert-Analyse, eigene Detection Rule und Incident Response |
+| `SOC_HomeLab_Writeup_.md` | Vollständiger Write-up: Aufbau der Umgebung, simulierter Brute-Force-Angriff, Alert-Analyse, eigene Detection Rule und Incident Response |
 
 ---
 
