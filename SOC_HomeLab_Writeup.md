@@ -1,185 +1,98 @@
-# Home SOC Lab – Brute-Force-Angriff erkennen und analysieren
+Home SOC Lab – Detecting and Analyzing a Brute-Force Attack
+Author: Elias Bach
+Date: April 2026
+Tools: Wazuh 4.7, VirtualBox 7.x, Ubuntu Server 22.04, Kali Linux 2024
+Focus: Log Analysis, Alert Triage, Detection Engineering
 
-**Autor:** Elias Bach  
-**Datum:** April 2026  
-**Tools:** Wazuh 4.7, VirtualBox 7.x, Ubuntu Server 22.04, Kali Linux 2024  
-**Schwerpunkt:** Log-Analyse, Alert-Triage, Detection Engineering
+My Reasoning
+I didn't want to just work through TryHackMe labs — I wanted to run the complete cycle myself: simulate an attack, observe logs, understand alerts, and write my own detection rule. I had already built a Python-based Nmap scanner and through that gained a solid understanding of how network scanning works at the protocol level. This lab was the logical next step: seeing what happens on the receiving end when someone scans and attacks.
 
----
-
-## Was ich mir dabei gedacht habe
-
-Ich wollte nicht nur TryHackMe-Labs machen, sondern einmal den kompletten Ablauf selbst durchspielen: Angriff simulieren, Logs beobachten, Alerts verstehen, eigene Regel schreiben. Ich habe vorher bereits einen eigenen Python-basierten Nmap-Scanner gebaut und dabei verstanden, wie Netzwerkscanning auf Protokollebene funktioniert. Dieses Lab war der nächste logische Schritt: zu sehen, was auf der Empfängerseite passiert, wenn jemand scannt und angreift.
-
----
-
-## Architektur
-
-```
+Architecture
 +------------------+        +-------------------+        +------------------+
 |   Kali Linux VM  | -----> |  Ubuntu Server VM | -----> |   Wazuh SIEM VM  |
-|  (Angreifer)     |  SSH   |  (Ziel/Agent)     |  Logs  |  (Manager)       |
+|  (Attacker)      |  SSH   |  (Target/Agent)   |  Logs  |  (Manager)       |
 +------------------+        +-------------------+        +------------------+
-```
+All three machines run under VirtualBox in an isolated internal network (no internet access, no access to the home network). The Wazuh Agent on the target machine forwards logs to the Wazuh Manager, which evaluates them and displays them in the dashboard.
+VMOperating SystemRoleRAMWazuh ManagerUbuntu 22.04 LTSSIEM4 GBTarget MachineUbuntu 22.04 LTSAgent / Attack Target2 GBAttackerKali Linux 2024Simulation2 GB
 
-Alle drei Maschinen laufen unter VirtualBox in einem isolierten internen Netzwerk (kein Internetzugang, kein Zugriff auf das Heimnetz). Der Wazuh Agent auf der Zielmaschine schickt Logs an den Wazuh Manager, der sie auswertet und im Dashboard anzeigt.
-
-| VM | Betriebssystem | Rolle | RAM |
-|---|---|---|---|
-| Wazuh Manager | Ubuntu 22.04 LTS | SIEM | 4 GB |
-| Zielmaschine | Ubuntu 22.04 LTS | Agent / Angriffsziel | 2 GB |
-| Angreifer | Kali Linux 2024 | Simulation | 2 GB |
-
----
-
-## Aufbau der Umgebung
-
-### Schritt 1 – VirtualBox und Netzwerk
-
-Alle drei VMs wurden unter VirtualBox 7.x aufgesetzt. Netzwerkadapter jeweils auf **Internes Netzwerk** gestellt, damit die Maschinen untereinander kommunizieren können, aber vom restlichen Netzwerk getrennt bleiben.
-
-### Schritt 2 – Wazuh Manager installieren
-
-```bash
-curl -sO https://packages.wazuh.com/4.7/wazuh-install.sh
+Environment Setup
+Step 1 – VirtualBox and Networking
+All three VMs were set up under VirtualBox 7.x. Network adapters were each set to Internal Network, so the machines can communicate with each other while remaining isolated from the rest of the network.
+Step 2 – Install Wazuh Manager
+bashcurl -sO https://packages.wazuh.com/4.7/wazuh-install.sh
 sudo bash wazuh-install.sh -a
-```
-
-Das Skript installiert Manager, Indexer und Dashboard in einem Durchgang. Anschließend ist das Dashboard über `https://<Manager-IP>` erreichbar.
-
-### Schritt 3 – Wazuh Agent auf der Zielmaschine installieren
-
-Ab Ubuntu 22.04 ist `apt-key add` deprecated. Der aktuelle Weg:
-
-```bash
-curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --dearmor -o /etc/apt/keyrings/wazuh.gpg
+The script installs Manager, Indexer, and Dashboard in a single pass. The dashboard is then accessible via https://<Manager-IP>.
+Step 3 – Install Wazuh Agent on the Target Machine
+As of Ubuntu 22.04, apt-key add is deprecated. The current approach:
+bashcurl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --dearmor -o /etc/apt/keyrings/wazuh.gpg
 echo "deb [signed-by=/etc/apt/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list
 apt-get update
 WAZUH_MANAGER='<Manager-IP>' apt-get install wazuh-agent
 systemctl enable --now wazuh-agent
-```
-
-### Schritt 4 – SSH aktivieren
-
-```bash
-sudo apt install openssh-server
+Step 4 – Enable SSH
+bashsudo apt install openssh-server
 sudo systemctl enable --now ssh
+
+Attack Simulation
+An SSH brute-force attack was launched from the Kali VM using Hydra:
+bashhydra -l root -P /usr/share/wordlists/rockyou.txt ssh://<Target-IP> -t 4
 ```
+
+`-t 4` means four parallel connections simultaneously. With rockyou.txt, hundreds of failed authentication attempts accumulate within a short time — all landing in `/var/log/auth.log` on the target machine.
 
 ---
 
-## Simulation des Angriffs
+## Alert Analysis in the Wazuh Dashboard
 
-Von der Kali-VM wurde ein SSH-Brute-Force-Angriff mit Hydra gestartet:
+### Triggered Rules
 
-```bash
-hydra -l root -P /usr/share/wordlists/rockyou.txt ssh://<Ziel-IP> -t 4
-```
+The first alerts appeared within seconds of the attack starting:
 
-`-t 4` bedeutet vier parallele Verbindungen gleichzeitig. Mit rockyou.txt kommen so innerhalb kurzer Zeit hunderte fehlgeschlagene Authentifizierungsversuche zusammen, die alle im `/var/log/auth.log` der Zielmaschine landen.
-
----
-
-## Alert-Analyse im Wazuh Dashboard
-
-### Ausgelöste Regeln
-
-Die ersten Alerts erschienen innerhalb weniger Sekunden nach Angriffsstart:
-
-| Rule ID | Beschreibung | Level |
+| Rule ID | Description | Level |
 |---|---|---|
 | 5711 | sshd: Attempt to login using a non-existent user | 5 |
 | 5712 | SSHD brute force trying to get access to the system | 10 |
 
-### Log-Beispiel (auth.log)
-
+### Log Sample (auth.log)
 ```
 Apr 01 14:23:11 ubuntu sshd[1842]: Failed password for root from 192.168.56.101 port 54872 ssh2
 Apr 01 14:23:11 ubuntu sshd[1842]: Failed password for root from 192.168.56.101 port 54873 ssh2
 Apr 01 14:23:12 ubuntu sshd[1842]: Failed password for root from 192.168.56.101 port 54874 ssh2
-```
+Triage Assessment
+Attack Type: SSH Brute Force (Password Guessing)
+Source IP: 192.168.56.101 (Kali VM)
+Target: Ubuntu Server, Port 22
+Outcome: No successful login
+Timeline:
+TimeEvent14:23:11First failed authentication from 192.168.56.10114:23:11–14:24:08Continuous failed attempts, peak at approx. 8 attempts/second14:23:14Rule 5712 fires for the first time (brute force detected)14:24:09Hydra stopped, last failed connection14:24:15IP block applied via ufw14:24:20Control attempt confirmed: no new auth.log entries
+Rule 5712 correctly identified the attack. The high frequency of failed logins from the same IP within a short period is a clear indicator of an automated attack. In a production environment, this timeline would trigger an escalation as well as an immediate IP block at the perimeter level.
 
-### Triage-Einschätzung
-
-**Angriffstyp:** SSH Brute Force (Password Guessing)  
-**Quell-IP:** 192.168.56.101 (Kali VM)  
-**Ziel:** Ubuntu Server, Port 22  
-**Ergebnis:** Kein erfolgreicher Login
-
-**Timeline:**
-
-| Zeit | Ereignis |
-|---|---|
-| 14:23:11 | Erste fehlgeschlagene Authentifizierung von 192.168.56.101 |
-| 14:23:11–14:24:08 | Kontinuierliche Fehlversuche, Peak bei ca. 8 Versuchen/Sekunde |
-| 14:23:14 | Rule 5712 feuert erstmals (Brute Force erkannt) |
-| 14:24:09 | Hydra gestoppt, letzte fehlgeschlagene Verbindung |
-| 14:24:15 | IP-Blockierung über ufw gesetzt |
-| 14:24:20 | Kontrollversuch bestätigt: keine neuen Auth-Log-Einträge |
-
-Rule 5712 hat den Angriff korrekt identifiziert. Die hohe Frequenz fehlgeschlagener Logins von derselben IP innerhalb kurzer Zeit ist ein klarer Indikator für einen automatisierten Angriff. In einer produktiven Umgebung wäre jetzt eine Eskalation mit dieser Timeline fällig sowie eine sofortige IP-Blockierung auf Perimeter-Ebene.
-
----
-
-## Eigene Detection Rule
-
-Die Standardregel 5712 feuert relativ früh. Ich habe eine zusätzliche Regel geschrieben, die beim zehnten Fehlversuch von derselben IP innerhalb von 30 Sekunden einen Alert auf Level 12 auslöst:
-
-```xml
-<rule id="100001" level="12" frequency="10" timeframe="30">
+Custom Detection Rule
+The default rule 5712 fires relatively early. I wrote an additional rule that triggers a Level 12 alert on the tenth failed attempt from the same IP within 30 seconds:
+xml<rule id="100001" level="12" frequency="10" timeframe="30">
   <if_matched_sid>5711</if_matched_sid>
   <same_source_ip />
   <description>High-frequency SSH brute force from single source IP</description>
   <group>authentication_failures,pci_dss_10.2.4,pci_dss_10.2.5</group>
 </rule>
-```
+frequency="10" means the rule fires on the tenth hit of the base rule 5711 within the defined time window. This reduces false positives for users who mistype their password a few times, without missing real attacks.
+The choice to use 5711 as the base rather than 5712 was deliberate. Rule 5712 is itself already an aggregated rule — it only fires after Wazuh has internally counted several individual events. Building a custom rule on top of 5712 stacks two counters on top of each other and loses precise control over the threshold. Using 5711 as the base means counting directly on the raw event — each individual failed login — and the time window can be cleanly calibrated.
 
-`frequency="10"` bedeutet: die Regel feuert beim zehnten Treffer der Basisregel 5711 innerhalb des definierten Zeitfensters. Das reduziert False Positives bei Nutzern, die sich ein paarmal vertippen, ohne echte Angriffe zu verpassen.
-
-Bewusst gewählt wurde 5711 als Basis und nicht 5712. Rule 5712 ist selbst bereits eine aggregierte Regel. Sie feuert erst, nachdem Wazuh intern mehrere Einzelereignisse gezählt hat. Wer eine Custom Rule auf 5712 aufbaut, stapelt zwei Zähler übereinander und verliert die Kontrolle über den genauen Schwellenwert. Mit 5711 als Basis wird direkt auf dem Rohereignis gezählt, jedem einzelnen fehlgeschlagenen Login und das Zeitfenster lässt sich sauber kalibrieren.
-
----
-
-## Gegenmaßnahme
-
-Die Quell-IP wurde manuell auf der Zielmaschine geblockt:
-
-```bash
-sudo ufw deny from 192.168.56.101 to any
+Countermeasure
+The source IP was manually blocked on the target machine:
+bashsudo ufw deny from 192.168.56.101 to any
 sudo ufw reload
-```
+The attack was then restarted. New connection attempts were dropped by the firewall; auth.log remained silent.
 
-Anschließend wurde der Angriff erneut gestartet. Neue Verbindungsversuche wurden von der Firewall verworfen, `auth.log` blieb still.
+MITRE ATT&CK Mapping
+TechniqueIDDescriptionBrute Force: Password GuessingT1110.001Automated password guessing against SSH
 
----
+Key Takeaways
+The biggest learning effect came not from the attack itself, but from writing the custom detection rule. Only through that process did I truly understand how Wazuh handles frequency and time windows internally — and why default rules sometimes fire too early or too late. The difference between an alert that appears and an alert that means something often comes down to that calibration.
+Also worth noting: SSH on port 22 with root login enabled is not a good idea on a real system. Fail2ban would have automatically blocked the IP after just a few failed attempts. Both of these were adjusted accordingly after the lab.
 
-## MITRE ATT&CK Mapping
+Next Step
+A phishing scenario with simulated payload execution and subsequent endpoint log analysis is planned.
 
-| Technik | ID | Beschreibung |
-|---|---|---|
-| Brute Force: Password Guessing | T1110.001 | Automatisiertes Durchprobieren von Passwörtern gegen SSH |
-
----
-
-## Was ich mitgenommen habe
-
-Den größten Lerneffekt hatte nicht der Angriff selbst, sondern das Schreiben der eigenen Detection Rule. Erst dabei habe ich verstanden, wie Wazuh intern mit Frequenz und Zeitfenster arbeitet und warum die Standardregeln manchmal zu früh oder zu spät feuern. Der Unterschied zwischen einem Alert, der erscheint und einem Alert, der etwas bedeutet, liegt oft in dieser Kalibrierung.
-
-Außerdem: SSH auf Port 22 mit aktivem Root-Login ist in einem echten System keine gute Idee. Fail2ban hätte die IP nach wenigen Fehlversuchen automatisch gesperrt. Beides habe ich nach dem Lab entsprechend angepasst.
-
----
-
-## Nächster Schritt
-
-Geplant ist ein Phishing-Szenario mit simulierter Payload-Ausführung und anschließender Log-Analyse auf dem Endpoint.
-
----
-
-## Umgebung zum Nachbauen
-
-| Komponente | Version | Link |
-|---|---|---|
-| VirtualBox | 7.x | https://www.virtualbox.org |
-| Wazuh | 4.7 | https://wazuh.com |
-| Ubuntu Server | 22.04 LTS | https://ubuntu.com |
-| Kali Linux | 2024.x | https://www.kali.org |
+Reproducing the Environment
+ComponentVersionLinkVirtualBox7.xhttps://www.virtualbox.orgWazuh4.7https://wazuh.comUbuntu Server22.04 LTShttps://ubuntu.comKali Linux2024.xhttps://www.kali.org
