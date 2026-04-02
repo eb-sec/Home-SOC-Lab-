@@ -14,7 +14,7 @@ Praktische Übungen im Bereich Security Operations und Incident Response, durchg
 
 ## Hintergrund
 
-Ich komme aus dem IT-Service-Management und arbeite mich gezielt in Richtung Security Operations. Diese Projekte entstehen neben Zertifizierungen wie CompTIA Security+ und CySA+ (in Vorbereitung) und sollen zeigen, wie ich an technische Probleme herangehe – nicht nur was ich gelesen habe, sondern was ich tatsächlich gebaut und verstanden habe.
+Ich komme aus dem Service-Management und bilde mich gezielt in Richtung Security Operations weiter. Diese Projekte entstehen neben Zertifizierungen wie CompTIA Security+ (erfolgreich bestanden) und CySA+ (in Vorbereitung) und sollen zeigen, wie ich an technische Probleme herangehe, nicht nur was ich gelesen habe, sondern was ich tatsächlich gebaut und verstanden habe.
 
 ---
 
