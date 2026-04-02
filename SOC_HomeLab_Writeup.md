@@ -8,10 +8,14 @@ My Reasoning
 I didn't want to just work through TryHackMe labs — I wanted to run the complete cycle myself: simulate an attack, observe logs, understand alerts, and write my own detection rule. I had already built a Python-based Nmap scanner and through that gained a solid understanding of how network scanning works at the protocol level. This lab was the logical next step: seeing what happens on the receiving end when someone scans and attacks.
 
 Architecture
+
 +------------------+        +-------------------+        +------------------+
 |   Kali Linux VM  | -----> |  Ubuntu Server VM | -----> |   Wazuh SIEM VM  |
 |  (Attacker)      |  SSH   |  (Target/Agent)   |  Logs  |  (Manager)       |
 +------------------+        +-------------------+        +------------------+
+
+
+
 All three machines run under VirtualBox in an isolated internal network (no internet access, no access to the home network). The Wazuh Agent on the target machine forwards logs to the Wazuh Manager, which evaluates them and displays them in the dashboard.
 VMOperating SystemRoleRAMWazuh ManagerUbuntu 22.04 LTSSIEM4 GBTarget MachineUbuntu 22.04 LTSAgent / Attack Target2 GBAttackerKali Linux 2024Simulation2 GB
 
