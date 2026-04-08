@@ -1,25 +1,26 @@
 # SOC Home Lab
 
-Praktische Übungen im Bereich Security Operations und Incident Response, durchgeführt in einer isolierten Laborumgebung auf Basis von Wazuh, VirtualBox und Kali Linux.
+Hands-on exercises in Security Operations and Incident Response, conducted in an isolated lab environment built on Wazuh, VirtualBox, and Kali Linux.
 
 ---
 
-## Inhalt
+## Contents
 
-| Datei | Beschreibung |
+| File | Description |
 |---|---|
-| `SOC_HomeLab_Writeup_.md` | Vollständiger Write-up: Aufbau der Umgebung, simulierter Brute-Force-Angriff, Alert-Analyse, eigene Detection Rule und Incident Response |
+| `SOC_HomeLab_Writeup_.md` | Full write-up: environment setup, simulated brute-force attack, alert analysis, custom detection rule, and incident response |
 
 ---
 
-## Hintergrund
+## Background
 
-Ich komme aus dem Service-Management und bilde mich gezielt in Richtung Security Operations weiter. Diese Projekte entstehen neben Zertifizierungen wie CompTIA Security+ (erfolgreich bestanden) und CySA+ (in Vorbereitung) und sollen zeigen, wie ich an technische Probleme herangehe, nicht nur was ich gelesen habe, sondern was ich tatsächlich gebaut und verstanden habe.
+I come from a Service Management background and am deliberately transitioning into Security Operations. These projects run alongside certifications such as CompTIA Security+ (passed) and CySA+ (in progress) and are meant to demonstrate how I approach technical problems — not just what I have read, but what I have actually built and understood.
 
 ---
 
-## Geplante nächste Projekte
+## Planned Next Projects
 
-- Phishing-Szenario mit simulierter Schadcode-Ausführung und Log-Analyse
-- Detection Rule für Lateral Movement
-- Splunk-basierte Alert-Triage-Übung
+- Phishing scenario with simulated payload execution and log analysis
+- Detection rule for lateral movement
+- Splunk-based alert triage exercise
+
