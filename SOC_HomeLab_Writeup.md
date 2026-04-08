@@ -9,7 +9,7 @@
 
 ## My Reasoning
 
-I didn't want to just work through TryHackMe labs — I wanted to run the complete cycle myself: simulate an attack, observe logs, understand alerts, and write my own detection rule. I had already built a Python-based Nmap scanner and through that gained a solid understanding of how network scanning works at the protocol level. This lab was the logical next step: seeing what happens on the receiving end when someone scans and attacks.
+I didn't want to just work through TryHackMe labs. I wanted to run the complete cycle myself: simulate an attack, observe logs, understand alerts, and write my own detection rule. I had already built a Python-based Nmap scanner and through that gained a solid understanding of how network scanning works at the protocol level. This lab was the logical next step: seeing what happens on the receiving end when someone scans and attacks.
 
 ---
 
@@ -76,7 +76,7 @@ An SSH brute-force attack was launched from the Kali VM using Hydra:
 hydra -l root -P /usr/share/wordlists/rockyou.txt ssh://<Target-IP> -t 4
 ```
 
-`-t 4` means four parallel connections simultaneously. With rockyou.txt, hundreds of failed authentication attempts accumulate within a short time — all landing in `/var/log/auth.log` on the target machine.
+`-t 4` means four parallel connections simultaneously. With rockyou.txt, hundreds of failed authentication attempts accumulate within a short time, all landing in `/var/log/auth.log` on the target machine.
 
 ---
 
