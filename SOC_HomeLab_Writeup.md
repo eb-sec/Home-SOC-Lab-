@@ -2,7 +2,7 @@
 
 **Author:** Elias Bach  
 **Date:** April 2026  
-**Tools:** Wazuh 4.7, VirtualBox 7.x, Ubuntu Server 22.04, Kali Linux 2024  
+**Tools:** Wazuh 4.7, VirtualBox 7.2.6a, Ubuntu Server 22.04, Kali Linux 2024  
 **Focus:** Log Analysis, Alert Triage, Detection Engineering
 
 ---
@@ -179,7 +179,7 @@ A phishing scenario with simulated payload execution and subsequent endpoint log
 
 | Component | Version | Link |
 |---|---|---|
-| VirtualBox | 7.x | https://www.virtualbox.org |
+| VirtualBox | 7.6.2a | https://www.virtualbox.org |
 | Wazuh | 4.7 | https://wazuh.com |
 | Ubuntu Server | 22.04 LTS | https://ubuntu.com |
-| Kali Linux | 2024.x | https://www.kali.org |
+| Kali Linux | 2024 | https://www.kali.org |
