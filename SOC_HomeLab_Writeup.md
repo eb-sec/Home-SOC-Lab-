@@ -36,7 +36,7 @@ All three machines run under VirtualBox in an isolated internal network (no inte
 
 ### Step 1 – VirtualBox and Networking
 
-All three VMs were set up under VirtualBox 7.x. Network adapters were each set to **Internal Network**, so the machines can communicate with each other while remaining isolated from the rest of the network.
+All three VMs were set up under VirtualBox 7.2.6a Network adapters were each set to **Internal Network**, so the machines can communicate with each other while remaining isolated from the rest of the network.
 
 ### Step 2 – Install Wazuh Manager
 
