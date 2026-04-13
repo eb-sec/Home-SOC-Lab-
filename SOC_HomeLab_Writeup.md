@@ -100,6 +100,7 @@ Apr 01 14:23:12 ubuntu sshd[1842]: Failed password for root from 192.168.56.101 
 ```
 
 ### Triage Assessment
+<img width="1547" height="1746" alt="image" src="https://github.com/user-attachments/assets/1f24ed21-98f8-4173-940f-ed78096e3d0c" />
 
 **Attack Type:** SSH Brute Force (Password Guessing)  
 **Source IP:** 192.168.56.101 (Kali VM)  
