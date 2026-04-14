@@ -137,7 +137,7 @@ The default rule 5712 fires relatively early. I wrote an additional rule that tr
 
 `frequency="10"` means the rule fires on the tenth hit of the base rule 5711 within the defined time window. This reduces false positives for users who mistype their password a few times, without missing real attacks.
 
-The choice to use 5711 as the base rather than 5712 was deliberate. Rule 5712 is itself already an aggregated rule — it only fires after Wazuh has internally counted several individual events. Building a custom rule on top of 5712 stacks two counters on top of each other and loses precise control over the threshold. Using 5711 as the base means counting directly on the raw event — each individual failed login — and the time window can be cleanly calibrated.
+The choice to use 5711 as the base rather than 5712 was deliberate. Rule 5712 is itself already an aggregated rule, it only fires after Wazuh has internally counted several individual events. Building a custom rule on top of 5712 stacks two counters on top of each other and loses precise control over the threshold. Using 5711 as the base means counting directly on the raw event, each individual failed login and the time window can be cleanly calibrated.
 
 ---
 
@@ -164,7 +164,7 @@ The attack was then restarted. New connection attempts were dropped by the firew
 
 ## Key Takeaways
 
-The biggest learning effect came not from the attack itself, but from writing the custom detection rule. Only through that process did I truly understand how Wazuh handles frequency and time windows internally — and why default rules sometimes fire too early or too late. The difference between an alert that appears and an alert that means something often comes down to that calibration.
+The biggest learning effect came not from the attack itself, but from writing the custom detection rule. Only through that process did I truly understand how Wazuh handles frequency and time windows internally , and why default rules sometimes fire too early or too late. The difference between an alert that appears and an alert that means something often comes down to that calibration.
 
 Also worth noting: SSH on port 22 with root login enabled is not a good idea on a real system. Fail2ban would have automatically blocked the IP after just a few failed attempts. Both of these were adjusted accordingly after the lab.
 
